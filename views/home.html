@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home - Our Company</title>
+    <title>Home - WEB SPECIALIST LTD</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -16,25 +16,149 @@
     </nav>
 
     <div class="container">
-        <h1>Welcome to Our Company</h1>
-        <p>We are dedicated to providing the best solutions for your business needs. With years of experience and a team of experts, we deliver excellence in everything we do.</p>
+        <div id="workingHoursStatus"></div>
         
-        <h2>Why Choose Us?</h2>
-        <ul>
-            <li>✅ Experienced professionals</li>
-            <li>✅ Customer-centric approach</li>
-            <li>✅ Innovative solutions</li>
-            <li>✅ 24/7 support</li>
-            <li>✅ Competitive pricing</li>
-        </ul>
+        <h1>Welcome to WEB SPECIALIST LTD</h1>
+        <p>Your trusted partner for innovative technology solutions. We deliver excellence in web development, software engineering, and ICT consulting.</p>
         
-        <p>Our mission is to help businesses grow through technology and innovation. We believe in building long-term relationships with our clients based on trust and quality.</p>
+        <h2>Our Core Services</h2>
+        <div class="services-grid">
+            <div class="service-card">
+                <h3>💻 Web Development</h3>
+                <p>Custom websites, e-commerce platforms, and progressive web applications built with cutting-edge technologies.</p>
+            </div>
+            
+            <div class="service-card">
+                <h3>🐛 Web App Debugging</h3>
+                <p>Expert debugging and optimization services to ensure your web applications run smoothly and efficiently.</p>
+            </div>
+            
+            <div class="service-card">
+                <h3>🏗️ Software Development</h3>
+                <p>Enterprise-grade software solutions tailored to your business needs, from desktop to cloud-based applications.</p>
+            </div>
+            
+            <div class="service-card">
+                <h3>🌐 ICT Agency Services</h3>
+                <p>Comprehensive ICT consulting, infrastructure setup, digital transformation, and technology advisory services.</p>
+            </div>
+        </div>
         
-        <a href="/services" class="btn">Explore Our Services</a>
+        <!-- Request Service Section -->
+        <div class="request-section">
+            <h2>Request Our Service</h2>
+            <p>Interested in working with us? Fill out the form below to get started with your project.</p>
+            <button id="requestBtn" class="request-btn">Request Service</button>
+            <div id="requestForm" class="request-form">
+                <form id="serviceRequestForm">
+                    <div class="form-group">
+                        <label for="fullName">Full Name *</label>
+                        <input type="text" id="fullName" name="fullName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Phone Number *</label>
+                        <input type="tel" id="phone" name="phone" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="serviceType">Service Interested In *</label>
+                        <select id="serviceType" name="serviceType" required>
+                            <option value="">Select a service...</option>
+                            <option value="web-development">Web Development</option>
+                            <option value="debugging">Web App Debugging</option>
+                            <option value="software">Software Development</option>
+                            <option value="ict">ICT Agency Services</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message">Project Details *</label>
+                        <textarea id="message" name="message" rows="4" placeholder="Tell us about your project requirements..." required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="request-btn active">Submit Request</button>
+                </form>
+            </div>
+            <div id="workingHoursNote" class="working-hours-note" style="display: none;"></div>
+            <div id="countdownTimer" class="countdown-timer"></div>
+        </div>
     </div>
 
     <footer>
-        <p>&copy; 2026 Our Company. All rights reserved.</p>
+        <p>&copy; 2026 WEB SPECIALIST LTD. All rights reserved. | Innovating Technology Solutions</p>
     </footer>
+
+    <script>
+        // Fetch working hours status from server
+        fetch('/api/working-status')
+            .then(res => res.json())
+            .then(data => {
+                const statusDiv = document.getElementById('workingHoursStatus');
+                const requestBtn = document.getElementById('requestBtn');
+                const workingNote = document.getElementById('workingHoursNote');
+                const countdownTimer = document.getElementById('countdownTimer');
+                const requestForm = document.getElementById('requestForm');
+                
+                if (data.isWorking) {
+                    statusDiv.innerHTML = '<div class="status-badge status-open">✅ We are OPEN! Working hours: Mon-Fri, 9AM-5PM</div>';
+                    requestBtn.classList.add('active');
+                    requestBtn.classList.remove('disabled');
+                    requestBtn.disabled = false;
+                    workingNote.style.display = 'none';
+                    countdownTimer.style.display = 'none';
+                } else {
+                    statusDiv.innerHTML = '<div class="status-badge status-closed">🔒 Currently CLOSED. Working hours: Mon-Fri, 9AM-5PM</div>';
+                    requestBtn.classList.add('disabled');
+                    requestBtn.classList.remove('active');
+                    requestBtn.disabled = true;
+                    workingNote.style.display = 'block';
+                    workingNote.innerHTML = `⚠️ Service requests are only available during working hours: <strong>Monday to Friday, 9:00 AM - 5:00 PM</strong>`;
+                    
+                    // Start countdown timer
+                    function updateCountdown() {
+                        fetch('/api/next-working-time')
+                            .then(res => res.json())
+                            .then(timeData => {
+                                if (timeData.hours > 0 || timeData.minutes > 0) {
+                                    countdownTimer.style.display = 'block';
+                                    countdownTimer.innerHTML = `⏰ Please check back in: <strong>${timeData.hours} hours, ${timeData.minutes} minutes</strong>`;
+                                } else {
+                                    countdownTimer.style.display = 'none';
+                                }
+                            });
+                    }
+                    
+                    updateCountdown();
+                    setInterval(updateCountdown, 60000); // Update every minute
+                }
+            });
+        
+        // Toggle request form
+        const requestBtn = document.getElementById('requestBtn');
+        const requestForm = document.getElementById('requestForm');
+        
+        requestBtn.addEventListener('click', () => {
+            if (!requestBtn.disabled) {
+                requestForm.classList.toggle('show');
+            }
+        });
+        
+        // Handle form submission
+        const serviceForm = document.getElementById('serviceRequestForm');
+        if (serviceForm) {
+            serviceForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                alert('Thank you for your request! We will contact you within 24 hours during working hours.');
+                serviceForm.reset();
+                requestForm.classList.remove('show');
+            });
+        }
+    </script>
 </body>
 </html>
